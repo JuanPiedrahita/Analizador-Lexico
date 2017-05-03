@@ -109,13 +109,24 @@ func RecorrerInordenTipos(t *Arbol) {
 }
 
 //funcion para armar arbol
-func armarArbol(s []string ) (*Arbol){
+func armarArbol(m map[string]Arbol, s []string ) (*Arbol){
 	pila := NewStack()
 	for j:=0;j<len(s);j++{
 		if(esEntero(s[j])){
 			pila.Push(&Arbol{nil,s[j],nil,"Valor"})
 		} else if (esVariable(s[j])) {
-			pila.Push(&Arbol{nil,s[j],nil,"Variable"})
+			if(enMapArbol(m, s[j])){
+				arbol:=m[s[j]]
+				var subExpresion *Arbol
+				if(arbol.Derecha.tipoNodo=="Variable"){
+					subExpresion = arbol.Izquierda
+				}else{
+					subExpresion = arbol.Derecha
+				}
+				pila.Push(subExpresion)
+			} else {
+				pila.Push(&Arbol{nil,s[j],nil,"Variable"})
+			}
 		} else {	
 			if pila.count>=2{
 				h2:= pila.Pop()
@@ -128,6 +139,15 @@ func armarArbol(s []string ) (*Arbol){
 			}
 		}
 	return pila.Pop()
+}
+//en Hashmap
+func enMapArbol(m map[string]Arbol, x string) bool{
+	for key, _ := range m{
+		if(key == x){
+			return true
+		}
+	}
+	return false
 }
 //en Hashmap
 func enMap(m map[string]float64, x string) bool{
@@ -220,7 +240,7 @@ func main(){
 		
 		validarTokens(s)
 
-		arbol := armarArbol(s)
+		arbol := armarArbol(mapArboles, s)
 	
 		//fmt.Println("Expresion infija: ")
 		//RecorrerInorden(arbol)
